@@ -1,3 +1,13 @@
+//
+// rubrik-exporter
+//
+// Exports metrics from rubrik backup for prometheus
+//
+// License: Apache License Version 2.0,
+// Organization: Claranet GmbH
+// Author: Martin Weber <martin.weber@de.clara.net>
+//
+
 package main
 
 import (

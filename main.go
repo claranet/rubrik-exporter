@@ -1,15 +1,20 @@
+//
+// rubrik-exporter
+//
+// Exports metrics from rubrik backup for prometheus
+//
+// License: Apache License Version 2.0,
+// Organization: Claranet GmbH
+// Author: Martin Weber <martin.weber@de.clara.net>
+//
+
 package main
 
 import (
+	"flag"
 	"net/http"
 
 	"github.com/claranet/rubrik-exporter/rubrik"
-
-	"flag"
-
-	//	"net/http"
-
-	//	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/log"
@@ -21,8 +26,8 @@ var vmIDNameMap map[string]string
 var (
 	namespace      = "rubrik"
 	rubrikURL      = flag.String("rubrik.url", "", "Rubrik URL to connect https://rubrik.local.host")
-	rubrikUser     = flag.String("rubrik.username", "", "Zerto API User")
-	rubrikPassword = flag.String("rubrik.password", "", "Zerto API User Password")
+	rubrikUser     = flag.String("rubrik.username", "", "Rubrik API User")
+	rubrikPassword = flag.String("rubrik.password", "", "Rubrik API User Password")
 	listenAddress  = flag.String("listen-address", ":9477", "The address to lisiten on for HTTP requests.")
 )
 

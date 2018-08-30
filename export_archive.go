@@ -1,3 +1,13 @@
+//
+// rubrik-exporter
+//
+// Exports metrics from rubrik backup for prometheus
+//
+// License: Apache License Version 2.0,
+// Organization: Claranet GmbH
+// Author: Martin Weber <martin.weber@de.clara.net>
+//
+
 package main
 
 import (
@@ -5,7 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// VMStats ...
+// ArchiveLocation ...
 type ArchiveLocation struct {
 	ArchiveLocationStatus *prometheus.GaugeVec
 }
@@ -40,7 +50,7 @@ func (e *ArchiveLocation) Collect(ch chan<- prometheus.Metric) {
 
 }
 
-// NewVMStatsExport ...
+// NewArchiveLocation ...
 func NewArchiveLocation() *ArchiveLocation {
 	return &ArchiveLocation{
 		ArchiveLocationStatus: prometheus.NewGaugeVec(prometheus.GaugeOpts{
