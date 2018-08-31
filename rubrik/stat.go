@@ -14,6 +14,7 @@ import (
 	// "fmt"
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 )
 
 type VmStorageList struct {
@@ -101,4 +102,14 @@ func (r Rubrik) GetDataLocationUsage() []DataLocationUsage {
 	decoder.Decode(&data)
 
 	return data.Data
+}
+
+func (r Rubrik) GetPhysicalIngest() []TimeStat {
+	resp, _ := r.makeRequest("GET", "/api/internal/stats/physical_ingest/time_series", RequestParams{params: url.Values{"range": []string{"-10min"}}})
+
+	var data []TimeStat
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&data)
+
+	return data
 }

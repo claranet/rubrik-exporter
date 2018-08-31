@@ -27,6 +27,8 @@ type RubrikStats struct {
 	NodeThroughputRead     *prometheus.GaugeVec
 	NodeThroughputWrite    *prometheus.GaugeVec
 
+	SystemPhysicalIngest *prometheus.GaugeVec
+
 	SystemStorageTotal         *prometheus.GaugeVec
 	SystemStorageUsed          *prometheus.GaugeVec
 	SystemStorageAvailable     *prometheus.GaugeVec
@@ -50,6 +52,8 @@ func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 	e.NodeIOPWrite.Describe(ch)
 	e.NodeThroughputRead.Describe(ch)
 	e.NodeThroughputWrite.Describe(ch)
+
+	e.SystemPhysicalIngest.Describe(ch)
 
 	e.SystemStorageTotal.Describe(ch)
 	e.SystemStorageUsed.Describe(ch)
@@ -180,6 +184,11 @@ func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 		g.Set(float64(usage.NumFilesetsArchived))
 		g.Collect(ch)
 	}
+
+	ingest := rubrikAPI.GetPhysicalIngest()
+	g = e.SystemPhysicalIngest.WithLabelValues()
+	g.Set(float64(ingest[0].Stat))
+	g.Collect(ch)
 }
 
 // NewRubrikStatsExport ...
@@ -218,6 +227,11 @@ func NewRubrikStatsExport() *RubrikStats {
 			Namespace: namespace, Name: "node_throughput_write",
 			Help: "Node Write Throughput per second",
 		}, []string{"node"}),
+
+		SystemPhysicalIngest: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "system_physical_ingest_bytes",
+			Help: "...",
+		}, []string{}),
 
 		SystemStorageAvailable: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "system_storage_available",
