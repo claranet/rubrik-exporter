@@ -37,6 +37,8 @@ func main() {
 	log.Debug("Create Rubrik Exporter instance")
 	rubrikAPI = rubrik.NewRubrik(*rubrikURL, *rubrikUser, *rubrikPassword)
 
+	rubrikAPI.GetTaskDetails()
+
 	prometheus.MustRegister(NewRubrikStatsExport())
 	prometheus.MustRegister(NewVMStatsExport())
 	prometheus.MustRegister(NewArchiveLocation())
