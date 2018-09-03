@@ -18,7 +18,10 @@ import (
 
 // RubrikStats ...
 type RubrikStats struct {
-	StreamCount            *prometheus.GaugeVec
+	StreamCount          *prometheus.GaugeVec
+	AverageStorageGrowth *prometheus.GaugeVec
+	RunawayRemaining     *prometheus.GaugeVec
+
 	NodeCount              *prometheus.GaugeVec
 	NodeNetworkReceived    *prometheus.GaugeVec
 	NodeNetworkTransmitted *prometheus.GaugeVec
@@ -27,6 +30,8 @@ type RubrikStats struct {
 	NodeThroughputRead     *prometheus.GaugeVec
 	NodeThroughputWrite    *prometheus.GaugeVec
 
+	SystemPhysicalIngest *prometheus.GaugeVec
+
 	SystemStorageTotal         *prometheus.GaugeVec
 	SystemStorageUsed          *prometheus.GaugeVec
 	SystemStorageAvailable     *prometheus.GaugeVec
@@ -34,6 +39,7 @@ type RubrikStats struct {
 	SystemStorageLiveMount     *prometheus.GaugeVec
 	SystemStorageMiscellaneous *prometheus.GaugeVec
 
+	ArchiveStorageBandwith        *prometheus.GaugeVec
 	ArchiveStorageArchivedVM      *prometheus.GaugeVec
 	ArchiveStorageArchivedFileSet *prometheus.GaugeVec
 	ArchiveStorageDataDownloaded  *prometheus.GaugeVec
@@ -43,6 +49,9 @@ type RubrikStats struct {
 // Describe ...
 func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 	e.StreamCount.Describe(ch)
+	e.AverageStorageGrowth.Describe(ch)
+	e.RunawayRemaining.Describe(ch)
+
 	e.NodeCount.Describe(ch)
 	e.NodeNetworkReceived.Describe(ch)
 	e.NodeNetworkTransmitted.Describe(ch)
@@ -51,6 +60,8 @@ func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 	e.NodeThroughputRead.Describe(ch)
 	e.NodeThroughputWrite.Describe(ch)
 
+	e.SystemPhysicalIngest.Describe(ch)
+
 	e.SystemStorageTotal.Describe(ch)
 	e.SystemStorageUsed.Describe(ch)
 	e.SystemStorageAvailable.Describe(ch)
@@ -58,6 +69,7 @@ func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 	e.SystemStorageLiveMount.Describe(ch)
 	e.SystemStorageMiscellaneous.Describe(ch)
 
+	e.ArchiveStorageBandwith.Describe(ch)
 	e.ArchiveStorageArchivedFileSet.Describe(ch)
 	e.ArchiveStorageArchivedVM.Describe(ch)
 	e.ArchiveStorageDataArchived.Describe(ch)
@@ -68,12 +80,15 @@ func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 	var g prometheus.Gauge
 
-	count := rubrikAPI.GetStreamCount()
-	{
-		g = e.StreamCount.WithLabelValues()
-		g.Set(float64(count))
-		g.Collect(ch)
-	}
+	g = e.StreamCount.WithLabelValues()
+	g.Set(float64(rubrikAPI.GetStreamCount()))
+	g.Collect(ch)
+	g = e.RunawayRemaining.WithLabelValues()
+	g.Set(float64(rubrikAPI.GetRunawayRemaining()))
+	g.Collect(ch)
+	g = e.AverageStorageGrowth.WithLabelValues()
+	g.Set(float64(rubrikAPI.GetAverageStorageGrowthPerDay()))
+	g.Collect(ch)
 
 	nodes := rubrikAPI.GetNodes()
 	{
@@ -149,6 +164,11 @@ func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 			}
 		}
 
+		g = e.ArchiveStorageBandwith.WithLabelValues(l.Name, l.IPAddress)
+		val := rubrikAPI.GetArchivalBandwith(l.ID, "-10min")[0].Stat
+		g.Set(float64(val))
+		g.Collect(ch)
+
 		g = e.ArchiveStorageDataArchived.WithLabelValues(l.Name, l.IPAddress)
 		g.Set(float64(usage.DataArchived))
 		g.Collect(ch)
@@ -180,6 +200,11 @@ func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 		g.Set(float64(usage.NumFilesetsArchived))
 		g.Collect(ch)
 	}
+
+	ingest := rubrikAPI.GetPhysicalIngest()
+	g = e.SystemPhysicalIngest.WithLabelValues()
+	g.Set(float64(ingest[0].Stat))
+	g.Collect(ch)
 }
 
 // NewRubrikStatsExport ...
@@ -189,6 +214,15 @@ func NewRubrikStatsExport() *RubrikStats {
 			Namespace: namespace, Name: "count_streams",
 			Help: "Count Rubrik Backup Streams",
 		}, []string{}),
+		AverageStorageGrowth: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "stat_average_storage_growth_per_day",
+			Help: "Get average storage growth per day in bytes",
+		}, []string{}),
+		RunawayRemaining: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "stat_runaway_remaining",
+			Help: "Get the number of days remaining before the system fills up",
+		}, []string{}),
+
 		NodeCount: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "count_nodes",
 			Help: "Count Rubrik Nodes in a Brick",
@@ -219,6 +253,11 @@ func NewRubrikStatsExport() *RubrikStats {
 			Help: "Node Write Throughput per second",
 		}, []string{"node"}),
 
+		SystemPhysicalIngest: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "system_physical_ingest_bytes",
+			Help: "...",
+		}, []string{}),
+
 		SystemStorageAvailable: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "system_storage_available",
 			Help: "Available Storage Bytes",
@@ -244,6 +283,10 @@ func NewRubrikStatsExport() *RubrikStats {
 			Help: "used bytes on storage",
 		}, []string{}),
 
+		ArchiveStorageBandwith: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "archive_storage_bandwidth",
+			Help: "...",
+		}, []string{"name", "target"}),
 		ArchiveStorageArchivedFileSet: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "archive_storage_archived_fileset",
 			Help: "...",
