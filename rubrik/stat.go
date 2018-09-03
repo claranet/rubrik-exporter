@@ -113,3 +113,40 @@ func (r Rubrik) GetPhysicalIngest() []TimeStat {
 
 	return data
 }
+
+func (r Rubrik) GetArchivalBandwith(locationID string, timerange string) []TimeStat {
+	if timerange == "" {
+		timerange = "-1h"
+	}
+
+	resp, _ := r.makeRequest("GET", "/api/internal/stats/archival/bandwidth/time_series",
+		RequestParams{params: url.Values{"data_location_id": []string{locationID}, "range": []string{timerange}}})
+
+	var data []TimeStat
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&data)
+
+	return data
+}
+
+// GetRunawayRemaining - Get the number of days remaining before the system fills up.
+func (r Rubrik) GetRunawayRemaining() int {
+	resp, _ := r.makeRequest("GET", "/api/internal/stats/runway_remaining", RequestParams{})
+
+	var data map[string]int
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&data)
+
+	return data["days"]
+}
+
+// GetAverageStorageGrowthPerDay - Get average storage growth per day.
+func (r Rubrik) GetAverageStorageGrowthPerDay() int {
+	resp, _ := r.makeRequest("GET", "/api/internal/stats/average_storage_growth_per_day", RequestParams{})
+
+	var data map[string]int
+	decoder := json.NewDecoder(resp.Body)
+	decoder.Decode(&data)
+
+	return data["bytes"]
+}
