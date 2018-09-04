@@ -29,7 +29,10 @@ type VirtualMachineList struct {
 // for All kinds of hypervisors (vmware, nutanix, hyperv)
 func (r Rubrik) ListAllVM() []VirtualMachine {
 	var list []VirtualMachine
-	list = append(r.ListVmwareVM(), r.ListNutanixVM()...)
+	list = append(list, r.ListVmwareVM()...)
+	list = append(list, r.ListNutanixVM()...)
+	list = append(list, r.ListHypervVM()...)
+
 	return list
 }
 
@@ -46,6 +49,16 @@ func (r Rubrik) ListVmwareVM() []VirtualMachine {
 // ListNutanixVM retrieve a List of all known VMware VM's
 func (r Rubrik) ListNutanixVM() []VirtualMachine {
 	resp, _ := r.makeRequest("GET", "/api/internal/nutanix/vm", RequestParams{})
+
+	data := json.NewDecoder(resp.Body)
+	var s VirtualMachineList
+	data.Decode(&s)
+	return s.Data
+}
+
+// ListHypervVM retrieve a List of all known VMware VM's
+func (r Rubrik) ListHypervVM() []VirtualMachine {
+	resp, _ := r.makeRequest("GET", "/api/internal/hyperv/vm", RequestParams{})
 
 	data := json.NewDecoder(resp.Body)
 	var s VirtualMachineList
