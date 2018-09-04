@@ -46,7 +46,7 @@ func main() {
 		w.Write([]byte(`<html><head><title>Rubrik Exporter</title></head><body><h1>Rubrik Exporter</h1><p><a href="/metrics">Metrics</a></p></body></html>`))
 	})
 
-	log.Printf("Starting Server: %s", *listenAddress)
+	log.Debugf("Starting Server: %s", *listenAddress)
 	err := http.ListenAndServe(*listenAddress, nil)
 	if err != nil {
 		log.Fatal(err)

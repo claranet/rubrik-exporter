@@ -13,7 +13,6 @@ package main
 import (
 	"github.com/claranet/rubrik-exporter/rubrik"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/log"
 )
 
 // RubrikStats ...
@@ -21,6 +20,10 @@ type RubrikStats struct {
 	StreamCount          *prometheus.GaugeVec
 	AverageStorageGrowth *prometheus.GaugeVec
 	RunawayRemaining     *prometheus.GaugeVec
+
+	SucceededTask *prometheus.GaugeVec
+	FailedTask    *prometheus.GaugeVec
+	CancledTask   *prometheus.GaugeVec
 
 	NodeCount              *prometheus.GaugeVec
 	NodeNetworkReceived    *prometheus.GaugeVec
@@ -51,6 +54,10 @@ func (e *RubrikStats) Describe(ch chan<- *prometheus.Desc) {
 	e.StreamCount.Describe(ch)
 	e.AverageStorageGrowth.Describe(ch)
 	e.RunawayRemaining.Describe(ch)
+
+	e.SucceededTask.Describe(ch)
+	e.FailedTask.Describe(ch)
+	e.CancledTask.Describe(ch)
 
 	e.NodeCount.Describe(ch)
 	e.NodeNetworkReceived.Describe(ch)
@@ -88,6 +95,18 @@ func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 	g.Collect(ch)
 	g = e.AverageStorageGrowth.WithLabelValues()
 	g.Set(float64(rubrikAPI.GetAverageStorageGrowthPerDay()))
+	g.Collect(ch)
+
+	taskStat := rubrikAPI.GetTaskDetails()
+
+	g = e.SucceededTask.WithLabelValues()
+	g.Set(taskStat["succeeded"])
+	g.Collect(ch)
+	g = e.FailedTask.WithLabelValues()
+	g.Set(taskStat["failed"])
+	g.Collect(ch)
+	g = e.CancledTask.WithLabelValues()
+	g.Set(taskStat["cancled"])
 	g.Collect(ch)
 
 	nodes := rubrikAPI.GetNodes()
@@ -172,7 +191,6 @@ func (e *RubrikStats) Collect(ch chan<- prometheus.Metric) {
 		g = e.ArchiveStorageDataArchived.WithLabelValues(l.Name, l.IPAddress)
 		g.Set(float64(usage.DataArchived))
 		g.Collect(ch)
-		log.Debug(usage.DataDownloaded)
 		g = e.ArchiveStorageDataDownloaded.WithLabelValues(l.Name, l.IPAddress)
 		g.Set(float64(usage.DataDownloaded))
 		g.Collect(ch)
@@ -221,6 +239,19 @@ func NewRubrikStatsExport() *RubrikStats {
 		RunawayRemaining: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "stat_runaway_remaining",
 			Help: "Get the number of days remaining before the system fills up",
+		}, []string{}),
+
+		SucceededTask: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "report_task_succeded",
+			Help: "...",
+		}, []string{}),
+		FailedTask: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "report_task_failed",
+			Help: "...",
+		}, []string{}),
+		CancledTask: prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: namespace, Name: "report_task_cancled",
+			Help: "...",
 		}, []string{}),
 
 		NodeCount: prometheus.NewGaugeVec(prometheus.GaugeOpts{
