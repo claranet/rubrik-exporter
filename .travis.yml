@@ -24,8 +24,6 @@ jobs:
           secure: "$GITHUBTOKEN"
         file_glob: true
         file: bin/*
-        on:
-          tags: true
     - name: Build and deploy docker image
       script:
         - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
