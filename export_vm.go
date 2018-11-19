@@ -52,7 +52,7 @@ func (e *VMStats) Collect(ch chan<- prometheus.Metric) {
 
 		var g prometheus.Gauge
 
-		g = e.VMIsProtected.WithLabelValues(vm.Name)
+		g = e.VMIsProtected.WithLabelValues(vm.Name, vm.ID)
 		if vm.EffectiveSLADomainID == "UNPROTECTED" {
 			g.Set(0)
 		} else {
