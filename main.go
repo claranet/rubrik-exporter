@@ -40,6 +40,7 @@ func main() {
 	prometheus.MustRegister(NewRubrikStatsExport())
 	prometheus.MustRegister(NewVMStatsExport())
 	prometheus.MustRegister(NewArchiveLocation())
+	prometheus.MustRegister(NewManagedVolume())
 
 	http.Handle("/metrics", prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
