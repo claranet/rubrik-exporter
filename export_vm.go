@@ -52,7 +52,7 @@ func (e *VMStats) Collect(ch chan<- prometheus.Metric) {
 
 		var g prometheus.Gauge
 
-		g = e.VMIsProtected.WithLabelValues(vm.Name)
+		g = e.VMIsProtected.WithLabelValues(vm.Name, vm.ID)
 		if vm.EffectiveSLADomainID == "UNPROTECTED" {
 			g.Set(0)
 		} else {
@@ -60,19 +60,19 @@ func (e *VMStats) Collect(ch chan<- prometheus.Metric) {
 		}
 		g.Collect(ch)
 
-		g = e.VMExclusiveBytes.WithLabelValues(vm.Name)
+		g = e.VMExclusiveBytes.WithLabelValues(vm.Name, vm.ID)
 		g.Set(float64(strg.ExclusivePhysicalBytes))
 		g.Collect(ch)
-		g = e.VMIndexStorageBytes.WithLabelValues(vm.Name)
+		g = e.VMIndexStorageBytes.WithLabelValues(vm.Name, vm.ID)
 		g.Set(float64(strg.IndexStorageBytes))
 		g.Collect(ch)
-		g = e.VMIngestedBytes.WithLabelValues(vm.Name)
+		g = e.VMIngestedBytes.WithLabelValues(vm.Name, vm.ID)
 		g.Set(float64(strg.IndexStorageBytes))
 		g.Collect(ch)
-		g = e.VMLogicalBytes.WithLabelValues(vm.Name)
+		g = e.VMLogicalBytes.WithLabelValues(vm.Name, vm.ID)
 		g.Set(float64(strg.Logicalbytes))
 		g.Collect(ch)
-		g = e.VMSharedPhysicalbytes.WithLabelValues(vm.Name)
+		g = e.VMSharedPhysicalbytes.WithLabelValues(vm.Name, vm.ID)
 		g.Set(float64(strg.SharedPhysicalBytes))
 		g.Collect(ch)
 	}
@@ -85,26 +85,26 @@ func NewVMStatsExport() *VMStats {
 		VMIsProtected: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_protected",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 		VMExclusiveBytes: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_consumed_exclusive_bytes",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 		VMIndexStorageBytes: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_consumed_index_storage_bytes",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 		VMIngestedBytes: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_consumed_ingested_bytes",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 		VMLogicalBytes: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_consumed_logical_bytes",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 		VMSharedPhysicalbytes: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: namespace, Name: "vm_consumed_shared_physical_bytes",
 			Help: "...",
-		}, []string{"vmname"}),
+		}, []string{"vmname", "vmid"}),
 	}
 }

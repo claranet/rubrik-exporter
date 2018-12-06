@@ -16,7 +16,7 @@ jobs:
       script:
         - go get github.com/mitchellh/gox
         - go get -d
-        - gox -os="linux darwin windows" -arch="amd64" -verbose -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
+        - gox -os="linux darwin" -arch="amd64" -verbose -output="bin/{{.Dir}}_{{.OS}}_{{.Arch}}"
       deploy:
         provider: releases
         skip_cleanup: true
@@ -26,7 +26,6 @@ jobs:
         file: bin/*
         on:
           tags: true
-          branch: release
     - name: Build and deploy docker image
       script:
         - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
