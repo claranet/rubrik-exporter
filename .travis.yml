@@ -20,8 +20,7 @@ jobs:
       deploy:
         provider: releases
         skip_cleanup: true
-        api_key:
-          secure: "$GITHUBTOKEN"
+        api_key: "$GITHUBTOKEN"
         file_glob: true
         file: bin/*
         on:
