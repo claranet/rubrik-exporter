@@ -16,12 +16,12 @@ Commandline Options
         -rubrik.username string
                 Zerto API User
 
-Simple to use
+Easy to use
 =============
 
 Using Docker 
 
-    docker run --detached claranet/rubrik-exporter \
+    docker run --detached --publish 9477:9477 claranet/rubrik-exporter \
                           -rubrik.url https://myrubrik.company.org \
                           -rubrik.username "prometheus@local" \
                           -rubrik.password 'SeCure'
