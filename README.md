@@ -16,6 +16,9 @@ Commandline Options
         -rubrik.username string
                 Zerto API User
 
+Environment variables can be used in lieu of commandline flags by uppercasing the
+entire flag (e.g. you can ommit -rubrik.password if RUBRIK.PASSWORD is set)
+
 Easy to use
 =============
 

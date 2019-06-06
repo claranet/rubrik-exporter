@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  rubrik-exporter:
+    image: claranet/rubrik-exporter
+    build: .
+    ports:
+      - '9477:9477'
+    environment:
+      RUBRIK.URL: https://rubrik.example.com
+      RUBRIK.USERNAME: prometheus
+      RUBRIK.PASSWORD: super_secret_password
