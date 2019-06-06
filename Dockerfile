@@ -1,21 +1,11 @@
-FROM golang:1.11 AS builder
-
+FROM golang:1.12 AS builder
 
 WORKDIR /go/src/github.com/claranet/rubrik-exporter
 COPY . .
-RUN go get
-RUN CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags '-w'
+RUN go get \
+    && CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags '-w'
 
-#ENTRYPOINT [ "/go/src/github.com/claranet/rubrik-exporter/rubrik-exporter" ]
-
-#------------------------
-
-# Final image.
-FROM quay.io/prometheus/busybox:latest
-#FROM alpine
-LABEL maintainer "Martin Weber <martin.weber@de.clara.net>"
-WORKDIR /usr/local/bin/
-COPY --from=builder /go/src/github.com/claranet/rubrik-exporter/rubrik-exporter /usr/local/bin/
+FROM scratch
+COPY --from=builder /go/src/github.com/claranet/rubrik-exporter/rubrik-exporter /
 EXPOSE 9477
-ENTRYPOINT [ "/usr/local/bin/rubrik-exporter" ]
-CMD [ ]
+ENTRYPOINT [ "/rubrik-exporter" ]

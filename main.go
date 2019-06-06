@@ -11,11 +11,10 @@
 package main
 
 import (
-	"flag"
 	"net/http"
 
 	"github.com/claranet/rubrik-exporter/rubrik"
-
+	"github.com/namsral/flag"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/log"
 )
