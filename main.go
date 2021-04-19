@@ -17,6 +17,7 @@ import (
 	"github.com/claranet/rubrik-exporter/rubrik"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/log"
 )
 
@@ -42,7 +43,7 @@ func main() {
 	prometheus.MustRegister(NewArchiveLocation())
 	prometheus.MustRegister(NewManagedVolume())
 
-	http.Handle("/metrics", prometheus.Handler())
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html><head><title>Rubrik Exporter</title></head><body><h1>Rubrik Exporter</h1><p><a href="/metrics">Metrics</a></p></body></html>`))
 	})
